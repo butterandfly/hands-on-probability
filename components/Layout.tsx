@@ -5,6 +5,7 @@ import LockIcon from '@material-ui/icons/LockOutlined';
 import StopIcon from '@material-ui/icons/Stop';
 import {LessonProgressData, SectionProgressData, LessonData, SectionData, SectionProgressesMap} from '../lib/datas'
 import {useUserDataContext, findLessonProgress} from './UserDataProvider'
+import { genSectionUrl } from '../lib/utils';
 
 function Header({title}: any) {
   return (
@@ -222,19 +223,27 @@ function SectionProgressItem({sectionProgress, isActive, isFirst, onClick}: Sect
     onClick(sectionProgress.sectionID);
   }
 
+  const href = genSectionUrl(sectionProgress.sectionID);
+
   return <div className={classes.join(' ')} key={sectionProgress.sectionID}>
     {isFirst ? null : <div><span className="connect"></span></div>}
-    <div onClick={click} className="section">
-      {isLocked ? <LockIcon htmlColor="gray"/> : <StopIcon />}
-      <span className="section-title">{sectionProgress.sectionTitle}</span>
-    </div>
+    {isLocked  
+      ? (<div className="section">
+          {<LockIcon htmlColor="gray"/>}
+        <span className="section-title">{sectionProgress.sectionTitle}</span>
+        </div>)
+      : (<Link href={href}>
+          <a onClick={click} className="section">
+            {<StopIcon />}
+            <span className="section-title">{sectionProgress.sectionTitle}</span>
+          </a>
+        </Link>)
+    }
     <style jsx>{`
       .section {
         display: flex;
         flex-flow: row;
         align-items: center;
-      }
-      .section::before {
       }
 
       .finished .section {

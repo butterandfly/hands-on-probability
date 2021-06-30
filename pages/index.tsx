@@ -7,6 +7,7 @@ import Link from 'next/link';
 import Head from 'next/head';
 import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
+import { genSectionUrl } from '../lib/utils';
 
 
 export default function Home({ lessons }: InferGetStaticPropsType<typeof getStaticProps>) {
@@ -37,7 +38,7 @@ export default function Home({ lessons }: InferGetStaticPropsType<typeof getStat
 function LessonsList({lessons}: any) {
   const genList = () => {
     return lessons.map((lesson: any) => {
-      return <LessonCard key={lesson.id} lesson={lesson}></LessonCard> 
+      return <LessonCard key={lesson.id} lesson={lesson} currentSection="01-01"></LessonCard> 
     })
   }
 
@@ -70,11 +71,13 @@ function LessonsList({lessons}: any) {
   )
 }
 
-function LessonCard({lesson}: any) {
-  const activeClass = lesson.sectionCount > 0 ? 'active' : '';
-  const classes = `container ${activeClass}`
+function LessonCard({lesson, currentSection}: any) {
+  const classes = `container ${lesson.isActive === true ? 'active' : ''}`
 
-  const href = lesson.sectionCount > 0 ? 'lessons/' + lesson.id : '#';
+  let href = '';
+  if (lesson.isActive) {
+    href = genSectionUrl(currentSection);
+  }
 
   return (
     <Grid key={lesson.id} item xs={6}>

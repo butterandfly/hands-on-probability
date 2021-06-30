@@ -47,3 +47,7 @@ export function addPropsToSyntax(originJsx: string, props: {[key: string]: strin
   console.log(newVal);
   return newVal;
 }
+
+export function genSectionUrl(sectionID: string) {
+  return `/lessons/${sectionID.substring(0, 2)}/sections/${sectionID}`;
+}

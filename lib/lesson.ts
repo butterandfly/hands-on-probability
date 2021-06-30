@@ -11,14 +11,15 @@ export function getAllLessonIds() {
   const fileNames = fs.readdirSync(lessonsDirectory)
   // ['01', '02', ...]
 
-  return fileNames.map(fileName => {
-    return {
-      params: {
-          // id: fileName.replace(/\.mdx$/, '')
-          id: fileName
-      }
-    }
-  })
+  return fileNames;
+  // return fileNames.map(fileName => {
+  //   return {
+  //     params: {
+  //         // id: fileName.replace(/\.mdx$/, '')
+  //         id: fileName
+  //     }
+  //   }
+  // })
 }
 
 export async function getAllLessonMetas() {
@@ -43,7 +44,7 @@ export async function getLessonMeta(id: string): Promise<LessonData> {
 
   const matterResult = matter(fileContents)
 
-  const sectionsMap = await getAllSectionMeta(id);
+  const sectionsMap = getAllSectionMeta(id);
   const lessonData: LessonData = {
     ...matterResult.data,
     id,
@@ -52,7 +53,8 @@ export async function getLessonMeta(id: string): Promise<LessonData> {
   return lessonData;
 }
 
-async function getAllSectionMeta(id: string): Promise<SectionsMap> {
+// Get all sections by the lesson id.
+export function getAllSectionMeta(id: string) {
   const fullPath = path.join(lessonsDirectory, id);
   let fileNames = fs.readdirSync(fullPath);
 

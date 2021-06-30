@@ -1,20 +1,19 @@
-import { getAllLessonIds, getLessonMeta, initLessonProgressData} from '../../lib/lesson';
+import { getAllLessonIds, getLessonMeta, initLessonProgressData, getAllSectionMeta, getSectionData} from '../../../../lib/lesson';
 import { GetStaticProps, GetStaticPaths } from 'next'
 import { ParsedUrlQuery } from 'querystring'
 
-import useSWR from 'swr'
-
-import LessonLayout from '../../components/Layout';
-import {fetcher} from '../../lib/fetcher';
-import { LessonData, LessonProgressData, SectionData, SectionProgressData} from '../../lib/datas';
+import LessonLayout from '../../../../components/Layout';
+import { LessonData, LessonProgressData, SectionData, SectionProgressData} from '../../../../lib/datas';
 import { useEffect } from 'react';
-import { findLastSectionProgress, findLessonProgress, findNextSectionProgress, findSectionProgress, findUnfinishedSection, useUserDataContext } from '../../components/UserDataProvider';
-import Part from '../../components/Part';
+import { findLastSectionProgress, findLessonProgress, findNextSectionProgress, findSectionProgress, findUnfinishedSection, useUserDataContext } from '../../../../components/UserDataProvider';
+import Part from '../../../../components/Part';
 import Button from '@material-ui/core/Button'
 import Link from 'next/link';
+import { genSectionUrl } from '../../../../lib/utils';
+import LockIcon from '@material-ui/icons/Lock';
 
 
-export default function Lesson({lesson, lessonProgress}: {lesson: LessonData, lessonProgress: LessonProgressData}) {
+export default function Lesson({lesson, lessonProgress, section}: {lesson: LessonData, lessonProgress: LessonProgressData, section: SectionData}) {
   const userData = useUserDataContext();
 
   useEffect(() => {
@@ -30,15 +29,9 @@ export default function Lesson({lesson, lessonProgress}: {lesson: LessonData, le
   if (lessonProg) {
     activeSectionID = lessonProg.activeSection;
   }
-  const {data, error} = useSWR(activeSectionID ? '/api/section/'+activeSectionID : null, fetcher, {
-    revalidateOnFocus: false,
-  })
 
   const genContent = () => {
-    if (error) return <div>failed to load</div>
-    if (!data) return <div>loading...</div>
-
-    const section = (data as SectionData);
+    if (!lessonProg) return <div>loading...</div>
 
     return (
       <div>
@@ -49,7 +42,7 @@ export default function Lesson({lesson, lessonProgress}: {lesson: LessonData, le
 
   return (
     <div>
-      <LessonLayout activeSectionID={activeSectionID} lessonData={lesson}>
+      <LessonLayout activeSectionID={section.id} lessonData={lesson}>
         {genContent()}
       </LessonLayout>
       <style jsx>{`
@@ -61,6 +54,22 @@ export default function Lesson({lesson, lessonProgress}: {lesson: LessonData, le
 function Section({section}: {section: SectionData,}) {
   const userData = useUserDataContext();
   const sectionProg = findSectionProgress(section.id, userData) as SectionProgressData;
+
+  if (sectionProg.isLocked) {
+    return (<div className="root">
+      <LockIcon className="icon" />
+      <style jsx>{`
+        .root {
+          text-align: center;
+          padding: 48px;
+        }
+        .root :global(.icon) {
+          font-size: 64px;
+          color: gray;
+        }
+      `}</style>
+    </div>);
+  }
 
   const genParts = () => {
     return Object.values(section.parts!).map((partData) => {
@@ -75,6 +84,10 @@ function Section({section}: {section: SectionData,}) {
 
   let href = '#';
   if (isLastSection) href = '/';
+  else if (sectionProg.isFinished) {
+    const nextSectionProg = findNextSectionProgress(section.id, userData);
+    href= genSectionUrl(nextSectionProg.sectionID);
+  }
   const click = () => {
     if (!isLastSection) {
       const nextSectionProg = findNextSectionProgress(section.id, userData);
@@ -125,23 +138,35 @@ function Section({section}: {section: SectionData,}) {
 
 // Get all lessons
 export const getStaticPaths: GetStaticPaths = async () => {
-  const paths = getAllLessonIds();
+  const paths:any[] = [];
+  const lessonIDs = getAllLessonIds();
+
+  lessonIDs.forEach((lessonID) => {
+    const sections = getAllSectionMeta(lessonID);
+    Object.keys(sections).forEach((sectionID) => {
+      paths.push({
+        params: {lid: lessonID, sid: sectionID}
+      })
+    })
+  });
   return {
-    paths,
+    paths: paths,
     fallback: false
-  }
+}
 }
 
 interface Params extends ParsedUrlQuery {
-  id: string
+  lid: string,
+  sid: string,
 }
 
 export const getStaticProps: GetStaticProps = async (context) => {
   const params = context.params as Params;
-  const lesson = await getLessonMeta(params.id)
-  const lessonProgress = await initLessonProgressData(params.id);
+  const lesson = await getLessonMeta(params.lid)
+  const lessonProgress = await initLessonProgressData(params.lid);
+  const section = await getSectionData(params.sid);
 
   return {
-    props: {lesson, lessonProgress}
+    props: {lesson, lessonProgress, section}
   };
 }
