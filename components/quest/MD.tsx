@@ -6,7 +6,7 @@ import katexPlugin from 'rehype-katex'
 export default function MD({children}: any) {
   return (
     <div className="gt-md">
-      <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[katexPlugin]} children={children} />
+      <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[katexPlugin]} >{children}</ReactMarkdown>
     </div>
   )
 }
