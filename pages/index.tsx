@@ -1,16 +1,37 @@
 // import Head from 'next/head'
 // import Image from 'next/image'
-// import styles from '../styles/Home.module.css'
-import { InferGetStaticPropsType } from 'next'
-import {getAllLessonMetas} from '../lib/lesson'
+import {getAllLessonMetas, initProgresses} from '../lib/lesson-helper'
 import Link from 'next/link';
 import Head from 'next/head';
 import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
 import { genSectionUrl } from '../lib/utils';
+import { LessonData, LessonProgressesMap } from '../lib/datas';
+import { useEffect } from 'react';
+import { useUserDataContext } from '../components/UserDataProvider';
+import LessonCard from '../components/LessonCard';
+import { DemoList } from '../components/DemoList';
+import { DemoData, getAllDemoMetas } from '../lib/demo-helper';
 
+interface HomeProps {
+  lessons: LessonData[],
+  demos: DemoData[],
+  initializedProcesses: LessonProgressesMap,
+}
 
-export default function Home({ lessons }: InferGetStaticPropsType<typeof getStaticProps>) {
+export default function Home({ lessons, demos, initializedProcesses }: HomeProps) {
+  const userData = useUserDataContext();
+
+  useEffect(() => {
+    if (Object.keys(userData.progresses).length === 0) {
+      userData.updateProgresses!(initializedProcesses);
+    }
+  }, [userData])
+
+  if (Object.keys(userData.progresses).length === 0) {
+    return <div>loading...</div>
+  }
+
   return (
     <div className="root">
       <Head>
@@ -19,7 +40,8 @@ export default function Home({ lessons }: InferGetStaticPropsType<typeof getStat
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />
       </Head>
       <Banner></Banner>
-      <LessonsList lessons={lessons}></LessonsList>
+      <LessonsList lessons={lessons} progresses={userData.progresses}></LessonsList>
+      <DemoList demoLessons={demos}></DemoList>
       <style jsx>{`
         .root {
           min-height: 100vh;
@@ -35,10 +57,17 @@ export default function Home({ lessons }: InferGetStaticPropsType<typeof getStat
   )
 }
 
-function LessonsList({lessons}: any) {
+interface LessonsListProps {
+  lessons: LessonData[];
+  progresses: LessonProgressesMap,
+}
+
+function LessonsList({lessons, progresses}: LessonsListProps) {
   const genList = () => {
     return lessons.map((lesson: any) => {
-      return <LessonCard key={lesson.id} lesson={lesson} currentSection="01-01"></LessonCard> 
+
+      const href = genSectionUrl(progresses[lesson.id].activeSection);
+      return <LessonCard key={lesson.id} lesson={lesson} href={href}></LessonCard> 
     })
   }
 
@@ -71,45 +100,6 @@ function LessonsList({lessons}: any) {
   )
 }
 
-function LessonCard({lesson, currentSection}: any) {
-  const classes = `container ${lesson.isActive === true ? 'active' : ''}`
-
-  let href = '';
-  if (lesson.isActive) {
-    href = genSectionUrl(currentSection);
-  }
-
-  return (
-    <Grid key={lesson.id} item xs={6}>
-      <Link href={href}>
-      <div className={classes}>
-          <p className="title"><b>Lesson {lesson.id}, {lesson.title}</b></p>
-          <p className="sub">{lesson.desc}</p>
-      </div>
-      </Link>
-      <style jsx>{`
-        .container {
-          border: 2px solid #b9d0c3;
-          border-radius: 5px;
-          padding: 16px;
-        }
-
-        .active:hover {
-          border: 2px solid seagreen;
-        }
-
-        .active {
-          cursor: pointer;
-        }
-
-        .sub{
-          color: gray;
-        }
-      `}</style>
-    </Grid>
-  )
-}
-
 function Banner() {
   return (
     <div className="root">
@@ -139,9 +129,13 @@ function Banner() {
 
 export const getStaticProps = async () => {
   const lessonDatas = await getAllLessonMetas();
+  const demoDatas = getAllDemoMetas();
+  const initializedProcesses = await initProgresses();
   return {
     props: {
-      lessons: lessonDatas
+      lessons: lessonDatas,
+      demos: demoDatas,
+      initializedProcesses 
     }
   }
 }

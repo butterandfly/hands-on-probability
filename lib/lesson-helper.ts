@@ -1,25 +1,26 @@
 import fs from 'fs'
 import path from 'path'
 import matter from 'gray-matter'
-import {SectionProgressData, LessonData, SectionData, SectionsMap, PartsMap, PartProgressesMap, SectionProgressesMap, LessonProgressData} from '../lib/datas'
+import {SectionProgressData, LessonData, SectionData, SectionsMap, PartsMap, PartProgressesMap, SectionProgressesMap, LessonProgressData, LessonProgressesMap} from './datas'
 import { num2str } from './utils'
-import { createPartData, initPartProgressData } from './part'
+import { createPartData, initPartProgressData } from './part-helper'
 
 const lessonsDirectory = path.join(process.cwd(), 'lessons')
 
+export async function initProgresses() {
+  const progs: LessonProgressesMap = {}
+  const lids = getAllLessonIds();
+  for (let i = 0; i < lids.length; i++) {
+    const lid = lids[i];
+    const lessonProgress = await initLessonProgressData(lid);
+    progs[lid] = lessonProgress;
+  }
+  return progs;
+}
+
 export function getAllLessonIds() {
   const fileNames = fs.readdirSync(lessonsDirectory)
-  // ['01', '02', ...]
-
   return fileNames;
-  // return fileNames.map(fileName => {
-  //   return {
-  //     params: {
-  //         // id: fileName.replace(/\.mdx$/, '')
-  //         id: fileName
-  //     }
-  //   }
-  // })
 }
 
 export async function getAllLessonMetas() {
@@ -29,11 +30,14 @@ export async function getAllLessonMetas() {
     const dataPath = path.join(lessonsDirectory, les, les + '-00.mdx');
     const fileContents = fs.readFileSync(dataPath, 'utf8')
   
-    const matterResult = matter(fileContents)
+    const matterResult = matter(fileContents);
+    const data = matterResult.data;
     return {
       id: les,
-      ...matterResult.data
-    }
+      isActive: data.isActive,
+      desc: data.desc,
+      title: data.title,
+    } as LessonData;
   });
   return lessonDatas;
 }
@@ -84,10 +88,13 @@ async function getLessonData(lessonID: string) {
   const matterResult = matter(fileContents)
 
   const sectionsMap = await getAllSectionDatas(lessonID);
+  const data = matterResult.data;
   const lessonData: LessonData = {
     ...matterResult.data,
     id: lessonID,
-    title: matterResult.data.title,
+    isActive: data.isActive,
+    desc: data.desc,
+    title: data.title,
     sections: sectionsMap,
   };
   return lessonData; 
@@ -164,7 +171,7 @@ export async function getSectionData(id: string) {
   return sectionData;
 }
 
-function initSectionProgressData(sectionData: SectionData): SectionProgressData {
+export function initSectionProgressData(sectionData: SectionData): SectionProgressData {
   const partProgresses: PartProgressesMap = {};
   Object.keys(sectionData.parts).forEach((key: string) => {
     const part= sectionData.parts[key];

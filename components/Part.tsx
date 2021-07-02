@@ -1,35 +1,20 @@
 import { MDXRemote } from 'next-mdx-remote'
 
-import {MCQuest, MCQuestData, MCQuestProgressData} from './quest/MCQuest';
-
-import Solution from './quest/Solution';
 import {PartData, PartProgressData} from '../lib/datas';
 import Paper from '@material-ui/core/Paper'
 import LockIcon from '@material-ui/icons/Lock';
 import { useMemo, useState } from 'react';
 import { findPartProgress, useUserDataContext } from './UserDataProvider';
-import GotIt from './quest/GotIt';
-import {Axiom, Definition, Theorem} from './quest/MathBox';
-import BFQuest from './quest/BFQuest';
+import {mdxComponents} from './mdx-components'
 
-const comps = {
-  MCQuest: MCQuest,
-  BFQuest: BFQuest,
-  Solution: Solution,
-  GotIt: GotIt,
-  Definition: Definition,
-  Theorem: Theorem,
-  Axiom: Axiom,
-}
-
-
-type PartProps = {
+interface PartProps {
   part: PartData, 
+  partProgress: PartProgressData,
 }
 
-export default function Part({part}: PartProps) {
+export default function Part({part, partProgress}: PartProps) {
   const userData = useUserDataContext();
-  const partProgress = findPartProgress(part.id, userData);
+  // const partProgress = findPartProgress(part.id, userData);
 
   const isLocked = partProgress.isLocked;
 
@@ -38,7 +23,6 @@ export default function Part({part}: PartProps) {
       partID: part.id,
       quest: part.quest,
     }
-  
   }, [part.content, part.id])
 
   return (<div className="root">
@@ -48,7 +32,7 @@ export default function Part({part}: PartProps) {
         </Paper>)
       : (<Paper className="g-part-paper" elevation={1}>
           <div className="wrapper">
-            <MDXRemote {...part.source} components={comps} scope={questScope} />
+            <MDXRemote {...part.source} components={mdxComponents} scope={questScope} />
           </div>
         </Paper>)
     }

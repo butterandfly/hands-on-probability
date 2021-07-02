@@ -1,104 +1,49 @@
 import Container from '@material-ui/core/Container';
 import Link from 'next/link';
-import { useState } from 'react';
 import LockIcon from '@material-ui/icons/LockOutlined';
 import StopIcon from '@material-ui/icons/Stop';
-import {LessonProgressData, SectionProgressData, LessonData, SectionData, SectionProgressesMap} from '../lib/datas'
-import {useUserDataContext, findLessonProgress} from './UserDataProvider'
-import { genSectionUrl } from '../lib/utils';
-
-function Header({title}: any) {
-  return (
-    <div className="root">
-      <Container maxWidth="lg">
-        <Link href="/"><a>Hands-On 🤲 Probability 🎲</a></Link>
-        <div className="title">{title}</div>
-      </Container>
-      
-      <style jsx>{`
-        .root {
-          background-color: seagreen;
-          width: 100vw;
-          color: white;
-          display: flex;
-          align-items: center;
-          font-size: 16px;
-          font-weight: bold;
-          flex-flow: row;
-          padding: 16px;
-        }
-
-        .title {
-          font-size: 24px;
-          font-weight: bold;
-          margin-top: 16px;
-        }
-
-        a:hover {
-          text-decoration: underline;
-        }
-
-      `}</style>
-    </div>
-  );
-}
-
-function Header2({title}: any) {
-  return (
-    <div className="root">
-      <Container maxWidth="lg">
-        <div className="bread">
-          <Link href="/"><a>Hands-On 🤲 Probability 🎲</a></Link>
-          <span className="slash"> / </span>
-          <div className="title">📚 {title}</div>
-        </div>
-      </Container>
-      
-      <style jsx>{`
-        .root {
-          box-shadow: 0px 1px 5px grey;
-          border-bottom: 0px solid seagreen;
-          width: 100vw;
-          color: black;
-          display: flex;
-          align-items: center;
-          font-size: 16px;
-          font-weight: bold;
-          flex-flow: row;
-          padding: 16px;
-        }
-
-        a {
-          color: seagreen;
-        }
-
-        .slash {
-          padding: 0 8px;
-        }
-
-        .bread {
-          display: flex;
-          flex-flow: row;
-          align-items: center;
-        }
-
-        .title {
-          font-size: 20px;
-        }
-
-        a:hover {
-          text-decoration: underline;
-        }
-
-      `}</style>
-    </div>
-  );
-}
+import {LessonProgressData, SectionProgressData, LessonData, SectionData, SectionProgressesMap} from '../../lib/datas'
+import {useUserDataContext, findLessonProgress} from '../UserDataProvider'
+import { genSectionUrl } from '../../lib/utils';
+import LessonHeader from './LessonHeader'
 
 type LessonLayoutProps = {
   lessonData: LessonData,
   children?: any,
   activeSectionID: string,
+}
+
+export function FixedHeaderLayout({title, children}: {title: string, children?: any}) {
+  return (
+    <div className="root">
+      {/* <Header></Header> */}
+      <div className="header-wrapper">
+        <LessonHeader title={title}></LessonHeader>
+      </div>
+      <Container className="body-wrapper" maxWidth="lg">
+      {children}
+      </Container>
+      <style jsx>{`
+        .root {
+          display: flex;
+          flex-flow: column;
+        }
+
+        .header-wrapper {
+          position: fixed;
+          background: white;
+          z-index: 10;
+        }
+
+        .root :global(.body-wrapper) {
+          margin-top: 65px;
+          display: flex;
+          flex-flow: row;
+          justify-content: center;
+        }
+      `}</style>
+    </div>
+  ) 
 }
 
 export default function LessonLayout({lessonData, children, activeSectionID}: LessonLayoutProps) {
@@ -107,7 +52,7 @@ export default function LessonLayout({lessonData, children, activeSectionID}: Le
     <div className="root">
       {/* <Header></Header> */}
       <div className="header-wrapper">
-        <Header2 title={lessonData.title}></Header2>
+        <LessonHeader title={'' + lessonData.title}></LessonHeader>
       </div>
       <Container className="body-wrapper" maxWidth="lg">
         <div className="left">{children}</div>

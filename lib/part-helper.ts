@@ -1,33 +1,16 @@
 import { serialize } from 'next-mdx-remote/serialize'
 import rehypeKatex from 'rehype-katex'
-import {PartProgressData, PartData} from '../lib/datas'
+import {PartProgressData, PartData} from './datas'
 
 import visit from 'unist-util-visit'
 import {Plugin} from 'unified';
-import { initMCQuestProgressData, MCQuestData, MCQuestProgressData } from '../components/quest/MCQuest'
-import { QuestBuilder, QuestData, QuestProgressData } from '../components/quest/questData'
+import { QuestData } from '../components/quest/questData'
 import {addPropsToSyntax, getComponentNameFromSyntax} from './utils'
-import {MCQuestBuilder} from '../components/quest/MCQuest'
-import { GotItBuilder, initGotItProgressData } from '../components/quest/GotIt';
-import { BFQuestBuilder } from '../components/quest/BFQuest';
+import {buildersMap, mdxContainerCompNames} from '../components/mdx-components'
 
 // ! Important
 // We need to use version 3 for the next-mdx-remote
 import remarkMath3 from './remark-math-3'
-
-
-const buildersMap: {[key: string]: QuestBuilder} = {
-  'MCQuest': MCQuestBuilder,
-  'GotIt': GotItBuilder,
-  'BFQuest': BFQuestBuilder,
-}
-
-const mdxContainerComps = [
-  'Solution',
-  'Definition',
-  'Theorem',
-  'Axiom',
-]
 
 export async function createPartData(partID: string, mdxContent: string) {
   const {source, questData} =  await serializeSectionMDX(mdxContent, partID);
@@ -92,7 +75,7 @@ export async function serializeSectionMDX(mdx: string, partID: string) {
     }
   }
 
-  const newMdx = addBlankHeadLine(mdx, mdxContainerComps);
+  const newMdx = addBlankHeadLine(mdx, mdxContainerCompNames);
 
   const source = await serialize(newMdx, {
     mdxOptions: {

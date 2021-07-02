@@ -1,6 +1,8 @@
 export type LessonData = {
   id: string,
   title: string,
+  isActive: boolean,
+  desc: string,
   sections?: SectionsMap,
 }
 

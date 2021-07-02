@@ -42,6 +42,7 @@ export function MCQuest({partID, quest}: MCQuestProps) {
     userData.updateQuestProgress!(partID, newProg);
   }
 
+
   const genOptions = () => {
     return quest.options.map((mdContent: string, index: number) => {
       const optionVal = genLetterByIndex(index)
@@ -125,13 +126,14 @@ function RadioOption({val, onChangeAnswer, children, status, attempts, currentIn
 </MCQuestEditor>
 `
 export function createMCQuestData(node: any): MCQuestData {
+  // debugger
   const optionStrings = node.value.match(/^\* .*$/gm);
   const options = optionStrings.map((str: string) => {
     return str.substring(2);
   });
 
   const props = getPropsFromSyntax(node);
-  console.dir(props)
+  // console.dir(props)
 
   return {
     questType: 'MCQuest',

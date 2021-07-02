@@ -1,17 +1,21 @@
 import { useState } from 'react';
 import { createContext, useContext } from 'react';
 import { LessonProgressData, LessonProgressesMap, PartProgressData, PartProgressesMap, SectionProgressData, SectionProgressesMap } from '../lib/datas';
+import { DemoProgressData } from '../lib/demo-helper';
 import { nextPartID, nextSectionID } from '../lib/utils';
 import { isQuestFinished, QuestProgressData } from './quest/questData';
 
 interface UserData {
   userName: string,
   progresses: LessonProgressesMap,
+  demoProgress?: DemoProgressData,
   updateQuestProgress?: (partID: string, questProgress: QuestProgressData) => void,
   updatePartProgress?: (partProgress: PartProgressData) => void,
   updateLessonProgress?: any,
+  updateProgresses?: (progresses: LessonProgressesMap) => void,
   activateSection?: (sectionID: string) => void,
   findQuestProgress?: (partID: string) => QuestProgressData,
+  updateDemoProcess?: (demoProgress: DemoProgressData) => void,
 }
 
 export const UserDataContext = createContext<UserData>({
@@ -78,6 +82,18 @@ export function UserDataWrapper({ children }: any) {
   }
 
   const updateQuestProgress = (partID: string, newQuestProg: QuestProgressData) => {
+    if (partID.startsWith('demo')) {
+      const demoProg: DemoProgressData = JSON.parse(JSON.stringify(userData.demoProgress!));
+      const demoID = partID.split('.')[0];
+      demoProg.sectionProgresses[demoID].partProgresses[partID].questProgress = newQuestProg
+      
+      setUserData({
+        ...userData,
+        demoProgress: demoProg,
+      })
+      return;
+    }
+
     const partProg = findPartProgress(partID, userData);
     const newPartProg = {
       ...partProg,
@@ -91,6 +107,17 @@ export function UserDataWrapper({ children }: any) {
     return _findQuestProgress(partID, userData);
   }
 
+  const updateProgresses = (progresses: LessonProgressesMap) => {
+    setUserData(_updateProgresses(progresses, userData));
+  }
+
+  const updateDemoProcess = (demoProgress: DemoProgressData) => {
+    setUserData({
+      ...userData,
+      demoProgress: demoProgress,
+    });
+  }
+
   return (
     <UserDataContext.Provider value={{...userData, 
       updatePartProgress, 
@@ -98,6 +125,8 @@ export function UserDataWrapper({ children }: any) {
       activateSection,
       updateQuestProgress,
       findQuestProgress,
+      updateProgresses,
+      updateDemoProcess,
       }}>
       {children}
     </UserDataContext.Provider>
@@ -108,8 +137,19 @@ export function useUserDataContext() {
   return useContext(UserDataContext);
 }
 
+const _updateProgresses = (progresses: LessonProgressesMap, userData: UserData) => {
+  return {
+    ...userData,
+    progresses,
+  }
+}
 
 const _findQuestProgress= (partID: string, userData: UserData) =>  {
+  if (partID.startsWith('demo')) {
+    const demoProg = userData.demoProgress!;
+    return demoProg.sectionProgresses[demoProg.demoID].partProgresses[partID].questProgress;
+  }
+
   return findPartProgress(partID, userData).questProgress;
 }
 
