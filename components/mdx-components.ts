@@ -8,6 +8,7 @@ import {MCQuestBuilder} from '../components/quest/MCQuest'
 import { GotItBuilder, } from '../components/quest/GotIt';
 import { BFQuestBuilder } from '../components/quest/BFQuest';
 import { QuestBuilder } from '../components/quest/questData'
+import { Idea } from './quest/InfoBox';
 
 export const mdxComponents: {[key: string]: any} = {
   MCQuest: MCQuest,
@@ -17,6 +18,7 @@ export const mdxComponents: {[key: string]: any} = {
   Definition: Definition,
   Theorem: Theorem,
   Axiom: Axiom,
+  Idea: Idea,
 }
 
 export const questComponents = [
@@ -30,6 +32,7 @@ export const mdContainers = [
   'Definition',
   'Theorem',
   'Axiom',
+  'Idea',
 ]
 
 

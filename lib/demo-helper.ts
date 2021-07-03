@@ -1,4 +1,3 @@
-import { ContactSupportOutlined } from '@material-ui/icons';
 import fs from 'fs'
 import matter from 'gray-matter';
 import path from 'path'

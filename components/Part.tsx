@@ -73,7 +73,7 @@ export function PiecesRenderer({partID, quest, questProgress, pieces, updateProg
         const name = piece.componentName;
         const Comp = mdxComponents[piece.componentName];
         if (mdContainers.includes(name)) {
-          return <Comp key={index} quest={quest} questProgress={questProgress}>{piece.innerContent}</Comp>
+          return <Comp key={index} quest={quest} questProgress={questProgress} {...piece.props}>{piece.innerContent}</Comp>
         }
 
         return <Comp key={index} partID={partID} quest={quest} questProgress={questProgress} updateProgress={updateProgress} />
