@@ -156,7 +156,7 @@ export async function getSectionData(id: string) {
   const parts: PartsMap = {};
   for (let i = 0; i < partContents.length; i++) {
     const partID = id + '.' + num2str(i+1);
-    const partData = await createPartData(partID, partContents[i]);
+    const partData = createPartData(partID, partContents[i]);
     parts[partID] = partData;
   }
 

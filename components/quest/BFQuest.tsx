@@ -1,8 +1,7 @@
 import TextField from '@material-ui/core/TextField'
 import { QuestComponetPros, QuestData, QuestProgressData, QuestBuilder, checkAnswer, isQuestFinished } from './questData';
-import {useUserDataContext} from '../UserDataProvider';
 import Submit from './Submit'
-import { getPropsFromSyntax } from '../../lib/utils';
+import { Piece } from '../../lib/datas';
 
 export interface BFQuestData extends QuestData {
   correct: string;
@@ -17,9 +16,8 @@ export interface BFQuestProps extends QuestComponetPros {
   quest: BFQuestData,
 }
 
-export default function BFQuest({partID, quest}: BFQuestProps) {
-  const userData = useUserDataContext();
-  const prog = userData.findQuestProgress!(partID);
+export default function BFQuest({quest, questProgress, updateProgress}: BFQuestProps) {
+  const prog = questProgress;
 
   const {status, attempts, currentInput} = prog;
   const disabled = isQuestFinished(status);
@@ -29,16 +27,16 @@ export default function BFQuest({partID, quest}: BFQuestProps) {
   }
 
   const changeCurrentInput = (val: string) => {
-    const newQuestProg: QuestProgressData = {
+    const newProg: QuestProgressData = {
       ...prog,
       currentInput: val,
     };
-    userData.updateQuestProgress!(partID, newQuestProg);
+    updateProgress(newProg)
   }
 
   const submit = () => {
     const newProg = checkAnswer(quest.correct, prog, compare);
-    userData.updateQuestProgress!(partID, newProg);
+    updateProgress(newProg)
   };
 
   return (<div>
@@ -61,10 +59,8 @@ function compare(a: string, b: string) {
 `
 <BFQuest correct="Probability" attemptsLeft="2" />
 `
-export function createBFQuestData(node: any): BFQuestData {
-  const props = getPropsFromSyntax(node);
-  console.dir(props)
-
+export function createBFQuestData(piece: Piece): BFQuestData {
+  const props = piece.props;
   return {
     questType: 'BFQuest',
     correct: props.correct,
@@ -86,7 +82,4 @@ export function initBFQuestProgressData(quest: BFQuestData): BFQuestProgressData
 export const BFQuestBuilder: QuestBuilder = {
   createQuestData: createBFQuestData,
   initQuestProgressData: initBFQuestProgressData,
-  replacer: (node: any) => {
-    node.value = `<BFQuest partID={partID} quest={quest} />`;
-  }
 }

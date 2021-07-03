@@ -1,29 +1,24 @@
-import { MDXRemote } from 'next-mdx-remote'
-
-import {PartData, PartProgressData} from '../lib/datas';
+import {PartData, PartProgressData, Piece} from '../lib/datas';
 import Paper from '@material-ui/core/Paper'
 import LockIcon from '@material-ui/icons/Lock';
-import { useMemo, useState } from 'react';
 import { findPartProgress, useUserDataContext } from './UserDataProvider';
-import {mdxComponents} from './mdx-components'
+import {mdContainers, mdxComponents} from './mdx-components'
+import { QuestData, QuestProgressData } from './quest/questData';
+import MD from './quest/MD';
 
 interface PartProps {
   part: PartData, 
   partProgress: PartProgressData,
 }
 
-export default function Part({part, partProgress}: PartProps) {
+export default function Part({part}: PartProps) {
   const userData = useUserDataContext();
-  // const partProgress = findPartProgress(part.id, userData);
-
+  const partProgress = findPartProgress(part.id, userData);
   const isLocked = partProgress.isLocked;
 
-  const questScope = useMemo(() => {
-    return {
-      partID: part.id,
-      quest: part.quest,
-    }
-  }, [part.content, part.id])
+  const updateQuestProgress = (newProg: QuestProgressData) => {
+    userData.updateQuestProgress!(part.id, newProg);
+  }
 
   return (<div className="root">
     {isLocked 
@@ -32,7 +27,7 @@ export default function Part({part, partProgress}: PartProps) {
         </Paper>)
       : (<Paper className="g-part-paper" elevation={1}>
           <div className="wrapper">
-            <MDXRemote {...part.source} components={mdxComponents} scope={questScope} />
+            <PiecesRenderer updateProgress={updateQuestProgress} partID={part.id} quest={part.quest} questProgress={partProgress.questProgress} pieces={part.pieces}></PiecesRenderer>
           </div>
         </Paper>)
     }
@@ -56,4 +51,37 @@ export default function Part({part, partProgress}: PartProps) {
       }
     `}</style>
   </div>);
+}
+
+
+interface PiecesRendererProps {
+  partID: string,
+  quest: QuestData,
+  questProgress: QuestProgressData,
+  pieces: Piece[],
+  updateProgress: (questProgress: QuestProgressData) => void,
+}
+
+export function PiecesRenderer({partID, quest, questProgress, pieces, updateProgress}: PiecesRendererProps) {
+  const genContent = () => {
+    return pieces.map((piece, index) => {
+      if (piece.type === 'md') {
+        return <MD key={index}>{piece.innerContent}</MD>
+      }
+
+      if (piece.type === 'component') {
+        const name = piece.componentName;
+        const Comp = mdxComponents[piece.componentName];
+        if (mdContainers.includes(name)) {
+          return <Comp key={index} quest={quest} questProgress={questProgress}>{piece.innerContent}</Comp>
+        }
+
+        return <Comp key={index} partID={partID} quest={quest} questProgress={questProgress} updateProgress={updateProgress} />
+      }
+
+      return <div key={index} className="unknown"></div>
+    })
+  }
+
+  return <div>{genContent()}</div>
 }

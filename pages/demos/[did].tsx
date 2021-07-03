@@ -1,17 +1,14 @@
-import { getAllLessonIds, getLessonMeta, initLessonProgressData, getAllSectionMeta, getSectionData, initProgresses} from '../../lib/lesson-helper';
 import { GetStaticProps, GetStaticPaths } from 'next'
-import { ParsedUrlQuery } from 'querystring'
-import Part from '../../components/Part';
+import {PiecesRenderer} from '../../components/Part';
 import Button from '@material-ui/core/Button'
 import Link from 'next/link';
 
-import { LessonData, LessonProgressData, LessonProgressesMap, PartProgressData, SectionData, SectionProgressData} from '../../lib/datas';
-import { useEffect } from 'react';
-import { findLessonProgress, useUserDataContext } from '../../components/UserDataProvider';
-import Section from '../../components/Section'
+import { PartData, PartProgressData } from '../../lib/datas';
+import { useState } from 'react';
 import {DemoData, DemoProgressData, getAllDemoIDs, getDemoData, initDemoProgress} from '../../lib/demo-helper'
-import LessonHeader from '../../components/layout/LessonHeader'
 import {FixedHeaderLayout} from '../../components/layout/LessonLayout'
+import Paper from '@material-ui/core/Paper'
+import { QuestProgressData } from '../../components/quest/questData';
 
 interface DemoProps {
   demo: DemoData, 
@@ -19,15 +16,7 @@ interface DemoProps {
 }
 
 export default function Demo({demo, progress}: DemoProps) {
-  const userData = useUserDataContext();
-
-  useEffect(() => {
-    userData.updateDemoProcess!(progress);
-  }, [userData.demoProgress?.demoID])
-
-  const demoProg = userData.demoProgress!;
-
-  if (!demoProg || (demoProg.demoID !== demo.id)) return <div>loading...</div>
+  const demoProg = progress;
 
   const section = demo.sections![demo.id];
   const sectionProg = demoProg.sectionProgresses[demo.id];
@@ -38,7 +27,7 @@ export default function Demo({demo, progress}: DemoProps) {
         isFinished: true,
         isLocked: false,
       } as PartProgressData;
-      return <Part key={partData.id} partProgress={partProg} part={partData} />
+      return <DemoPart key={partData.id} partProgress={partProg} part={partData} />
     })
   };
 
@@ -87,6 +76,48 @@ export default function Demo({demo, progress}: DemoProps) {
     </div>
   )
 }
+
+interface PartProps {
+  part: PartData, 
+  partProgress: PartProgressData,
+}
+
+function DemoPart({part, partProgress}: PartProps) {
+  const [prog, setProg] =  useState(partProgress.questProgress);
+
+  const updateProgress = (newProg: QuestProgressData) => {
+    setProg(newProg);
+    return;
+  }
+
+  return (<div className="root">
+    <Paper className="g-part-paper" elevation={1}>
+      <div className="wrapper">
+        <PiecesRenderer updateProgress={updateProgress} partID={part.id} quest={part.quest} questProgress={prog} pieces={part.pieces}></PiecesRenderer>
+      </div>
+    </Paper>
+    <style jsx>{`
+      .lock {
+        text-align: center;
+      }
+
+      .root :global(.g-part-paper) {
+        padding: 16px;
+        margin-bottom: 16px;
+      }
+
+      .root :global(.locked) {
+        background-color: darkgray;
+      }
+
+      .root :global(.g-part-lock-icon) {
+        font-size: 32px;
+        color: white;
+      }
+    `}</style>
+  </div>);
+}
+
 
 // Get all demos.
 export const getStaticPaths: GetStaticPaths = async () => {

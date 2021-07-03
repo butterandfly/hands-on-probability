@@ -1,21 +1,23 @@
 import Button from '@material-ui/core/Button'
+import { Piece } from '../../lib/datas';
 import { useUserDataContext } from '../UserDataProvider';
 import { QuestProgressData, QuestComponetPros, QuestData, QuestBuilder } from './questData'
 
-export default function GotIt({partID}: QuestComponetPros) {
-  const userData = useUserDataContext();
-  const prog = userData.findQuestProgress!(partID);
+export default function GotIt({questProgress, updateProgress}: QuestComponetPros) {
+  // const userData = useUserDataContext();
+  // const prog = userData.findQuestProgress!(partID);
 
-  const disabled = ['success', 'failure'].includes(prog.status) ? true : false;
+  const disabled = ['success', 'failure'].includes(questProgress.status) ? true : false;
 
   const onSubmit = () => {
     const newQuestProg: QuestProgressData = {
-      ...prog,
+      ...questProgress,
       status: 'success',
       attemptsLeft: 0,
       attempts: [''],
     };
-    userData.updateQuestProgress!(partID, newQuestProg);
+    updateProgress(newQuestProg);
+    // userData.updateQuestProgress!(partID, newQuestProg);
   }
 
   return (<div className="root">
@@ -28,7 +30,7 @@ export default function GotIt({partID}: QuestComponetPros) {
   </div>)
 }
 
-export function createGotItData(node: any): QuestData {
+export function createGotItData(_: Piece): QuestData {
   return {
     questType: 'GotIt',
     correct: '',
@@ -50,7 +52,7 @@ export function initGotItProgressData(quest: QuestData): QuestProgressData {
 export const GotItBuilder: QuestBuilder = {
   createQuestData: createGotItData,
   initQuestProgressData: initGotItProgressData,
-  replacer: (node: any) => {
-    node.value = `<GotIt partID={partID} />`
-  }
+  // replacer: (node: any) => {
+  //   node.value = `<GotIt partID={partID} />`
+  // }
 }

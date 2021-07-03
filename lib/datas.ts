@@ -1,3 +1,5 @@
+import { QuestData } from "../components/quest/questData"
+
 export type LessonData = {
   id: string,
   title: string,
@@ -30,9 +32,10 @@ export type SectionProgressData = {
 
 export type PartData = {
   id: string,
-  quest?: any,
+  quest: QuestData,
   content?: string,
   source?: any,
+  pieces: Piece[],
 }
 
 export type PartProgressData = {
@@ -60,4 +63,16 @@ export type SectionProgressesMap = {
 
 export type LessonProgressesMap = {
   [key: string]: LessonProgressData
+}
+
+// type PieceType = 'md' | 'quest' | 'showcase';
+export type PieceType = 'md' | 'component';
+
+
+export interface Piece {
+  type: PieceType,
+  content: string,
+  componentName: string,
+  innerContent: string,
+  props: {[key: string]: string},
 }

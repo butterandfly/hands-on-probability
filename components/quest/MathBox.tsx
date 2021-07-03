@@ -1,3 +1,5 @@
+import MD from './MD'
+
 interface MathBoxProps {
   children: any,
   header: string,
@@ -7,7 +9,9 @@ interface MathBoxProps {
 export default function MathBox({children, header, color}: MathBoxProps) {
   return (<div className="root">
     <span className="header">{header}</span>
-    {children}
+    <MD>
+      {children}
+    </MD>
 
     <style jsx>{`
       .root {

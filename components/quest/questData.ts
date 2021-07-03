@@ -1,3 +1,5 @@
+import { Piece } from "../../lib/datas";
+
 export interface QuestData {
   questType: string,
   correct: any;
@@ -14,8 +16,9 @@ export interface QuestProgressData {
 }
 
 export interface QuestComponetPros {
-  partID: string,
   quest: QuestData,
+  questProgress: QuestProgressData,
+  updateProgress: (progress: QuestProgressData) => void,
 }
 
 export function isQuestFinished(status: string) {
@@ -24,9 +27,9 @@ export function isQuestFinished(status: string) {
 }
 
 export interface QuestBuilder {
-  createQuestData: (node: any) => QuestData,
+  createQuestData: (piece: Piece) => QuestData,
   initQuestProgressData: (node: any) => QuestProgressData,
-  replacer: (node: any) => void,
+  // replacer: (node: any) => void,
 }
 
 // Check the answer, then return a new quest progress.

@@ -3,8 +3,7 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Submit from './Submit'
 import MD from './MD'
 import { QuestComponetPros, QuestData, QuestProgressData, QuestBuilder, checkAnswer } from './questData';
-import {useUserDataContext} from '../UserDataProvider';
-import {getPropsFromSyntax} from '../../lib/utils'
+import { Piece } from '../../lib/datas';
 
 export interface MCQuestData extends QuestData {
   correct: string;
@@ -25,21 +24,20 @@ export interface MCQuestProps extends QuestComponetPros {
 }
 
 
-export function MCQuest({partID, quest}: MCQuestProps) {
-  const userData = useUserDataContext();
-  const prog = userData.findQuestProgress!(partID);
+export function MCQuest({quest, questProgress, updateProgress}: MCQuestProps) {
+  const prog = questProgress;
 
   const changeCurrentInput = (optionVal: string) => {
     const newQuestProg: QuestProgressData = {
       ...prog,
       currentInput: optionVal,
     };
-    userData.updateQuestProgress!(partID, newQuestProg);
+    updateProgress(newQuestProg);
   }
 
   const submit = () => {
     const newProg = checkAnswer(quest.correct, prog);
-    userData.updateQuestProgress!(partID, newProg);
+    updateProgress(newProg);
   }
 
 
@@ -125,21 +123,20 @@ function RadioOption({val, onChangeAnswer, children, status, attempts, currentIn
 * Option B
 </MCQuestEditor>
 `
-export function createMCQuestData(node: any): MCQuestData {
-  // debugger
-  const optionStrings = node.value.match(/^\* .*$/gm);
-  const options = optionStrings.map((str: string) => {
-    return str.substring(2);
-  });
-
-  const props = getPropsFromSyntax(node);
-  // console.dir(props)
+export function createMCQuestData(piece: Piece): MCQuestData {
+  const optionStrings = piece.innerContent.match(/^\* .*$/gm);
+  let options: string[] = [];
+  if (optionStrings) {
+    options = optionStrings.map((str: string) => {
+      return str.substring(2);
+    });
+  }
 
   return {
     questType: 'MCQuest',
-    correct: props.correct,
+    correct: piece.props.correct,
     options: options,
-    totalAttempts: +props.totalAttempts,
+    totalAttempts: +piece.props.totalAttempts,
   };
 }
 
@@ -157,7 +154,4 @@ export function initMCQuestProgressData(quest: MCQuestData): MCQuestProgressData
 export const MCQuestBuilder: QuestBuilder = {
   createQuestData: createMCQuestData,
   initQuestProgressData: initMCQuestProgressData,
-  replacer: (node: any) => {
-    node.value = `<MCQuest partID={partID} quest={quest} />`;
-  }
 }

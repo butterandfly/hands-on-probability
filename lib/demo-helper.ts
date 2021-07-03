@@ -25,10 +25,7 @@ export type DemoProgressData = {
 const demoDirectory = path.join(process.cwd(), 'demos')
 
 export async function initDemoProgress(demo: DemoData) {
-  console.log('--- initDemoProgress ---')
-  console.dir(demo)
   const sectionProg = initSectionProgressData(demo.sections![demo.id]);
-  console.dir(sectionProg)
 
   const demoProg: DemoProgressData = {
     demoID: demo.id,
@@ -81,7 +78,6 @@ export async function getDemoData(demoID: string) {
 export function getAllDemoIDs() {
   const fileNames = fs.readdirSync(demoDirectory);
   const ids = fileNames.map((name) => name.replace(/.mdx$/, ''));
-  console.dir(ids);
   return ids;
 }
 

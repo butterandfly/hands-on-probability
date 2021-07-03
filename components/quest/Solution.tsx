@@ -1,14 +1,13 @@
-import {ReactChild, useState} from 'react'
-import { useUserDataContext } from '../UserDataProvider';
-import { QuestComponetPros, QuestData, QuestProgressData } from './questData';
+import {useState} from 'react'
+import { QuestComponetPros} from './questData';
+import MD from './MD'
 
 interface SolutionProps extends QuestComponetPros {
   children?: any;
 }
 
-export default function Solution({children, partID}: SolutionProps) {
-  const userData = useUserDataContext();
-  const prog = userData.findQuestProgress!(partID);
+export default function Solution({children, questProgress}: SolutionProps) {
+  const prog = questProgress;
 
   const [expandedState, setExpanded] = useState(false);
   const shouldHide = (prog.status === 'still');
@@ -22,7 +21,7 @@ export default function Solution({children, partID}: SolutionProps) {
   return <div className="root" hidden={shouldHide}>
     <div className="solution-btn" onClick={onClick}>{arrowIcon} Solution</div>
     {expandedState
-      ? <div className="solution-content">{children}</div>
+      ? <div className="solution-content"><MD>{children}</MD></div>
       : null
     }
     <style jsx>{`

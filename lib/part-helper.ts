@@ -1,31 +1,21 @@
-import { serialize } from 'next-mdx-remote/serialize'
-import rehypeKatex from 'rehype-katex'
-import {PartProgressData, PartData} from './datas'
+import {PartProgressData, PartData, Piece} from './datas'
+import {buildersMap, mdxComponents, questComponents} from '../components/mdx-components'
 
-import visit from 'unist-util-visit'
-import {Plugin} from 'unified';
-import { QuestData } from '../components/quest/questData'
-import {addPropsToSyntax, getComponentNameFromSyntax} from './utils'
-import {buildersMap, mdxContainerCompNames} from '../components/mdx-components'
+export function createPartData(partID: string, content: string): PartData {
+  const pieces = getPieces(content, Object.keys(mdxComponents));
+  const questPiece = pieces.find((piece) => {
+    return questComponents.includes(piece.componentName);
+  })
 
-// ! Important
-// We need to use version 3 for the next-mdx-remote
-import remarkMath3 from './remark-math-3'
+  if (!questPiece) throw new Error('There is no quest in part:\n' + content);
+  const quest = buildersMap[questPiece.componentName].createQuestData(questPiece);
 
-export async function createPartData(partID: string, mdxContent: string) {
-  const {source, questData} =  await serializeSectionMDX(mdxContent, partID);
-
-  const part: PartData = {
+  return {
     id: partID,
-    content: mdxContent,
-    source: source
+    content: content,
+    pieces: pieces,
+    quest: quest,
   };
-
-  if (questData) {
-    part.quest = questData;
-  }
-
-  return part;
 }
 
 export function initPartProgressData(partData: PartData) {
@@ -35,8 +25,6 @@ export function initPartProgressData(partData: PartData) {
     isLocked: !isFirstPart(),
   }
 
-  if (!partData.quest) throw new Error('Every part should have at least 1 quest!')
-  
   const type = partData.quest.questType;
   const initFunc = buildersMap[type].initQuestProgressData;
   progress.questProgress = initFunc(partData.quest);
@@ -49,46 +37,79 @@ export function initPartProgressData(partData: PartData) {
   }
 }
 
+export function getPieces(partContent: string, validComps: string[], ) {
+  const compsStr = validComps.join('|');
+  const noWrapCompRE = `(^<(${compsStr})( |([^>]*))\\/>)`
+  const wrapCompRE = `(^((<(${compsStr}))( |([^\\/>]*))>([^])*?<\\/(${compsStr})>))`
+  const regex = new RegExp(noWrapCompRE + '|' + wrapCompRE, 'gms');
 
-export async function serializeSectionMDX(mdx: string, partID: string) {
-  let data:any = null;
-
-  const createQuest: Plugin<[]> = ()=> {
-    return (tree: any) => {
-      visit(tree, 'jsx', (node: any) => {
-        const compName = getComponentNameFromSyntax(node);
-
-        if (buildersMap[compName]) {
-          const builder = buildersMap[compName];
-          data = builder.createQuestData(node);
-          builder.replacer(node);
-        }
-
-        if (compName === 'Solution') {
-          node.value = addPropsToSyntax(node.value, {
-            'partID': '{partID}',
-            'quest': '{quest}',
-          });
-        }
-        // return node;
-      })
-    }
+  // Split to pieces
+  const reactComps = partContent.match(regex);
+  if (!reactComps) {
+    return [createMDPiece(partContent)];
   }
 
-  const newMdx = addBlankHeadLine(mdx, mdxContainerCompNames);
+  // Set place-holder, record the component
+  const temp = partContent.replace(regex, '${placeholder}$')
+  const mds = temp.split('${placeholder}$');
 
-  const source = await serialize(newMdx, {
-    mdxOptions: {
-      remarkPlugins: [remarkMath3, createQuest],
-      rehypePlugins: [rehypeKatex],
+  // Rebuild the pieces array
+  const pieceArray: Piece[] = [];
+  for (let i = 0; i < reactComps.length; i++) {
+    const mdContent = mds[i].trim();
+    if (mdContent) {
+      pieceArray.push(createMDPiece(mdContent));
     }
-  });
 
-  return {source, questData: data as QuestData};
+    const compContent = reactComps[i];
+    pieceArray.push({
+      type: 'component',
+      content: compContent,
+      componentName: getComponentName(compContent),
+      props: getProps(compContent),
+      innerContent: getInnerContent(compContent),
+    });
+  }
+  const mdContent = mds[reactComps.length].trim();
+  if (mdContent) {
+    pieceArray.push(createMDPiece(mdContent));
+  }
+
+  return pieceArray;
 }
 
-function addBlankHeadLine(content: string, comps: string[]) {
-  const compsStr = comps.join('|');
-  const re = new RegExp(`^<(${compsStr})( |([^>]*))>`, 'gm');
-  return content.replace(re, '$&' + '\n');
+function createMDPiece(content: string): Piece {
+  return {
+    type: 'md',
+    content: content,
+    componentName: 'MD',
+    innerContent: content,
+    props: {},
+  }
+}
+
+export function getComponentName(compContent: string) {
+  const matches = compContent.match(/^<\w+/) || [];
+  if (matches.length < 1) return '';
+
+  return matches[0].substring(1);
+}
+
+export function getProps(compContent: string) {
+  const tagContent = (compContent.match(/<([^>]*)>/))![0];
+
+  const pairs: {[key: string]: string} = {};
+  (tagContent.match(/[a-zA-Z0-9]+=\"([^"]*)\"/gm) || []).forEach((pair: string) => {
+    const data = pair.split('='); 
+    pairs[data[0]] = data[1].replace(/"/g, '');
+  });
+
+  return pairs;
+}
+
+export function getInnerContent(compContent: string) {
+  const compName = getComponentName(compContent);
+  const tag1 = new RegExp(`^<${compName}[^>]*>`, 'gm');
+  const tag2 = new RegExp(`^<\\/${compName}>`, 'gm');
+  return compContent.replace(tag1, '').replace(tag2, '');
 }
