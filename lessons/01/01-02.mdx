@@ -1,7 +1,145 @@
 ---
-title: Section 2
+title: Sample Space
 ---
 
-## Section 2
+## Definition
+
+Definition first:
+
+<Definition>
+**Sample Space** 
+
+The set of all possible outcomes of an experiment is known as the sample space of the experiment and is denoted by $\Omega$.
+</Definition>
+
+So,
+- A sample space $\Omega$ is a set;
+- Its members are all possible outcomes.
 
 <GotIt />
+--- lock ---
+
+### Question
+Back to our **Rolling a Dice** 🎲 , which is the sample space of this experiment?
+
+<MCQuest correct="A" totalAttempts="1">
+* $\{1,2,3,4,5,6\}$
+* $\{1,2,3,4,5\}$
+* $\{6\}$
+* None of above.
+</MCQuest>
+
+--- lock ---
+
+## Legitimate Sample Space
+When we say $\{1,2,3,4,5\}$ is not a sample space of our Rolling a Dice experiment, we mean it's not a legitimate sample space.
+
+But why? Are there any criteria?  
+Yes.  
+
+A legitimate sample space has two properties:
+- Mutually exclusive,
+- collectively exhaustive.
+
+<GotIt />
+
+--- lock ---
+
+### Mutually Exclusive
+What we say a sample space is mutually exclusive, we mean at the end of the experiment, there can only be one of the outcomes that has happened.
+
+### Question
+**Rolling a Dice** 🎲 .  
+Which one of the followings is **not** a mutually exclusive sample space? 
+
+<MCQuest correct="C" totalAttempts="2">
+* $\{$ odd numbers,even numbers $\}$
+* $\{$ integer $\}$
+* $\{1 \text{ or } 2, 3 \text{ or } 4, 5 \text{ or } 6, 6\}$
+* $\{$ real numbers $\}$
+</MCQuest>
+
+--- lock ---
+
+### Collectively Exhaustive
+
+At the end of the experiment, there is always one of the outcomes that has happened, then we say this sample space is collectively exhaustive.
+
+So the sample space $\{1,2,3,4,5\}$ is not collectively exhaustive for the Rolling a Dice: you might roll a 6, but it's not in the sample space.
+
+### Question
+
+**Rolling a Dice** 🎲 .  
+Which one of the followings is **not** a collectively exhaustive sample space? 
+
+<MCQuest correct="C" totalAttempts="2">
+* $\{1,2,3,4,5,6,7\}$
+* $\{1,2,3,4,5,6\}$
+* $\{1,2,3,4,5\}$
+* $\{1 \text{ or } 2, 3 \text{ or } 4, 5 \text{ or } 6 \}$
+</MCQuest>
+
+--- lock ---
+
+## Appropriate Sample Space
+You may notice, for an experiment, there might be many legitimate sample spaces.
+
+<Idea>
+The sample space of an experiment is decided by you. An experiment may have many legitimate sample spaces.
+</Idea>
+
+But not all the sample spaces are appropriate.
+A good, appropriate sample space, must be:
+- Legitimate
+- At the "right" granularity
+
+<GotIt />
+
+--- lock ---
+
+### Question
+**Rolling a Dice** 🎲 .  
+You want to study the chance of getting a 6, then which one is a more appropriate sample space?
+
+<MCQuest correct="B" totalAttempts="2">
+* $\{$ odd numbers,even numbers $\}$
+* $\{1,2,3,4,5,6\}$
+* $\{\{1,2,3\} , \{4,5,6\}\}$
+</MCQuest>
+
+--- lock ---
+
+A sample space at the "right" granularity, has outcomes which are suit for you study. Also, this sample space should not have irrelevant details.
+
+### Question
+**Rolling a Dice** 🎲 .  
+You want to study the change of getting a number greater than 3, then which one is a more appropriate sample space?  
+You are sure that the result of a dice has nothing to do with the weather of tomorrow.
+
+<MCQuest correct="A" totalAttempts="1">
+* $\{$ result is greater then 3, result is not greater then 3 $\}$
+* $\{$ result is greater then 3 and it rains, result is greater then 3 and it doesn't rain, result is not greater then 3 $\}$
+</MCQuest>
+
+--- lock ---
+
+## Exercises
+
+### Question
+For the experiment of flipping a coin, and for each one of the following choices, determine whether we have a legitimate sample space:  (from MITx 6.431x)
+
+$\Omega=\{$ Heads and it is raining, Heads and it is not raining, Tails $\}$
+
+<MCQuest correct="A" totalAttempts="1">
+* Yes
+* No
+</MCQuest>
+
+--- lock ---
+
+$\Omega=\{$ Heads and it is raining, Tails and it is not raining, Tails $\}$
+
+<MCQuest correct="B" totalAttempts="1">
+* Yes
+* No
+</MCQuest>
